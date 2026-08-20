@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrugIQ — Drug Information Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1a2035;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-dark: #2563eb;
+            --cyan: #06b6d4;
+            --purple: #8b5cf6;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --gradient: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --radius-lg: 20px;
+        }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+        /* SPLASH */
+        #splashScreen {
+            position: fixed; inset: 0; background: var(--bg-primary); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+        #splashScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-glow {
+            position: absolute; width: 700px; height: 700px; border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(59,130,246,0.15) 0%, rgba(139,92,246,0.07) 50%, transparent 70%);
+            pointer-events: none;
+        }
+        .splash-logo {
+            position: relative; width: 96px; height: 96px; border-radius: 26px;
+            background: var(--gradient); display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; box-shadow: 0 0 60px rgba(59,130,246,0.45), 0 0 120px rgba(139,92,246,0.2);
+            animation: splashPulse 2.5s ease-in-out infinite; margin-bottom: 28px;
+        }
+        @keyframes splashPulse {
+            0%,100% { transform: scale(1); box-shadow: 0 0 60px rgba(59,130,246,0.4),0 0 120px rgba(139,92,246,0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 0 90px rgba(59,130,246,0.6),0 0 180px rgba(139,92,246,0.3); }
+        }
+        .splash-title {
+            font-size: 4rem; font-weight: 800; letter-spacing: -2.5px;
+            background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            animation: fadeUp 0.8s ease 0.2s both;
+        }
+        .splash-tagline { font-size: 1rem; color: var(--text-muted); margin-top: 10px; letter-spacing: 0.3px; animation: fadeUp 0.8s ease 0.4s both; }
+        .splash-bar-wrap { margin-top: 52px; width: 220px; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; animation: fadeUp 0.8s ease 0.6s both; }
+        .splash-bar { height: 100%; background: var(--gradient); border-radius: 3px; animation: splashLoad 2s ease forwards; }
+        @keyframes splashLoad { from { width: 0% } to { width: 100% } }
+        .splash-team { margin-top: 18px; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; animation: fadeUp 0.8s ease 0.8s both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SIDEBAR */
+        .sidebar { width: 310px; min-width: 310px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .sidebar-header { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 40px; height: 40px; background: var(--gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+        .logo-text h1 { font-size: 1.25rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px; }
+        .logo-text p { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 16px 18px; }
+        .sidebar-section { margin-bottom: 20px; }
+        .sidebar-section-title { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .upload-area { border: 2px dashed rgba(59,130,246,0.2); border-radius: var(--radius); padding: 18px; text-align: center; cursor: pointer; transition: all 0.25s ease; background: rgba(59,130,246,0.03); position: relative; }
+        .upload-area:hover, .upload-area.dragover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.06); }
+        .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .upload-icon { font-size: 1.5rem; margin-bottom: 6px; }
+        .upload-text { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+        .upload-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+        .drug-card { background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; }
+        .drug-card:hover { border-color: var(--border-hover); background: rgba(59,130,246,0.04); }
+        .drug-info { flex: 1; }
+        .drug-name { font-weight: 600; font-size: 0.88rem; }
+        .drug-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .drug-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; opacity: 0; }
+        .drug-card:hover .drug-remove { opacity: 1; }
+        .drug-remove:hover { background: rgba(244,63,94,0.1); color: var(--rose); }
+        .sidebar-btn { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-glass); color: var(--text-secondary); font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .sidebar-btn:hover { background: rgba(59,130,246,0.06); border-color: var(--border-hover); color: var(--text-primary); }
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); padding: 8px 0; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .status-dot.online { background: var(--emerald); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+        .status-dot.offline { background: var(--text-muted); }
+        .sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); }
+        .ai-disclaimer { display: flex; align-items: flex-start; gap: 8px; font-size: 0.72rem; color: var(--amber); background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.12); border-radius: 8px; padding: 10px 12px; line-height: 1.4; }
+        .empty-state { text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem; }
+        .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; opacity: 0.5; }
+        .interaction-checker { display: flex; flex-direction: column; gap: 8px; }
+        .interaction-select { width: 100%; padding: 9px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.82rem; outline: none; cursor: pointer; appearance: none; }
+        .interaction-select:focus { border-color: var(--accent); }
+        .interaction-select:disabled { opacity: 0.5; cursor: not-allowed; }
+        .interaction-check-btn { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+        .interaction-check-btn:hover { background: rgba(245,158,11,0.16); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
+
+        /* MAIN */
+        .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; border-bottom: 1px solid var(--border); background: var(--bg-secondary); min-height: 56px; }
+        .topbar-left { display: flex; align-items: center; gap: 10px; }
+        .topbar-title { font-size: 0.92rem; font-weight: 600; }
+        .topbar-badge { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .topbar-actions { display: flex; gap: 8px; }
+        .topbar-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-glass); color: var(--text-secondary); font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .topbar-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+        .chat-area { flex: 1; overflow-y: auto; padding: 24px 32px; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+        /* WELCOME */
+        .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; animation: fadeIn 0.5s ease; }
+        .welcome-icon { font-size: 3.5rem; margin-bottom: 12px; filter: drop-shadow(0 4px 20px rgba(59,130,246,0.3)); }
+        .welcome h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .welcome p { color: var(--text-secondary); font-size: 0.92rem; max-width: 500px; line-height: 1.6; margin-bottom: 32px; }
+        .example-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; width: 100%; }
+        .example-card { background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: left; cursor: pointer; transition: all 0.25s; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
+        .example-card:hover { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.04); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+        .example-card .icon { font-size: 1.3rem; display: block; margin-bottom: 8px; }
+        .example-card .text { font-weight: 500; color: var(--text-primary); font-size: 0.84rem; }
+
+        /* MESSAGES */
+        .message { animation: slideIn 0.3s ease; }
+        .message-user { display: flex; justify-content: flex-end; margin: 6px 0; }
+        .message-user .bubble { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color: white; padding: 12px 18px; border-radius: 18px 18px 4px 18px; max-width: 65%; font-size: 0.9rem; line-height: 1.55; box-shadow: 0 4px 15px rgba(59,130,246,0.25); word-wrap: break-word; }
+        .message-bot { display: flex; flex-direction: column; align-items: flex-start; margin: 6px 0; }
+        .message-bot .bubble { background: var(--bg-card); color: var(--text-primary); padding: 16px 20px; border-radius: 18px 18px 18px 4px; max-width: 78%; font-size: 0.9rem; line-height: 1.65; border: 1px solid var(--border); word-wrap: break-word; white-space: pre-wrap; }
+        .message-bot .bubble strong { color: var(--accent-light); }
+        .query-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .query-badge.condition { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+        .query-badge.general { background: rgba(6,182,212,0.12); color: #22d3ee; border: 1px solid rgba(6,182,212,0.2); }
+        .interaction-status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin-bottom: 8px; }
+        .interaction-status-badge.contraindicated { background: rgba(244,63,94,0.14); color: var(--rose); border: 1px solid rgba(244,63,94,0.35); }
+        .interaction-status-badge.caution { background: rgba(245,158,11,0.14); color: var(--amber); border: 1px solid rgba(245,158,11,0.35); }
+        .interaction-status-badge.safe { background: rgba(16,185,129,0.14); color: var(--emerald); border: 1px solid rgba(16,185,129,0.35); }
+
+        /* CITATIONS */
+        .citations-container { margin-top: 8px; max-width: 78%; }
+        .citation-card { background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.15); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 6px; }
+        .citation-header { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .citation-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(59,130,246,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+        .citation-item:last-child { margin-bottom: 0; }
+        .citation-drug-name { font-size: 0.82rem; font-weight: 600; color: #93c5fd; margin-bottom: 8px; }
+        .citation-pages-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .citation-pages-label { font-size: 0.72rem; color: var(--text-muted); }
+        .page-pill { display: inline-flex; align-items: center; gap: 3px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); color: var(--accent-light); padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .page-pill:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(59,130,246,0.2); }
+        .citation-download-btn { background: none; border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; text-decoration: none; }
+        .citation-download-btn:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+        .refused-box { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 6px; font-size: 0.8rem; color: #fbbf24; max-width: 78%; }
+
+        /* OVERVIEW MENU CARD */
+        .overview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; max-width: 78%; margin: 6px 0; transition: box-shadow 0.3s ease; }
+        .overview-card.flash-highlight { box-shadow: 0 0 0 3px rgba(59,130,246,0.5); border-color: rgba(59,130,246,0.5); }
+        .overview-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .overview-card-icon { font-size: 1.6rem; }
+        .overview-card-title { font-weight: 700; font-size: 1rem; }
+        .overview-card-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .overview-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .overview-section-btn { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-glass); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .overview-section-btn:hover { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.06); }
+        .overview-section-btn.active { border-color: var(--accent); background: rgba(59,130,246,0.12); color: var(--accent-light); }
+        .overview-section-btn .icon { font-size: 1rem; }
+        .overview-card-panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .overview-panel-answer { font-size: 0.86rem; line-height: 1.6; white-space: pre-wrap; color: var(--text-primary); }
+        .overview-panel-loading { display: flex; gap: 5px; padding: 8px 0; }
+        .overview-panel-loading .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: typingPulse 1.2s infinite; }
+        .overview-panel-loading .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .overview-panel-loading .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        .overview-panel-error { color: #fbbf24; font-size: 0.82rem; }
+        .back-to-menu-box { display: flex; align-items: center; gap: 12px; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.82rem; color: var(--text-secondary); max-width: 78%; margin: 6px 0; }
+        .back-to-menu-btn { background: var(--gradient); border: none; border-radius: 8px; color: white; font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+        .typing-indicator { display: none; align-items: flex-start; margin: 6px 0; }
+        .typing-indicator.active { display: flex; }
+        .typing-bubble { background: var(--bg-card); border: 1px solid var(--border); padding: 14px 20px; border-radius: 18px 18px 18px 4px; display: flex; gap: 5px; align-items: center; }
+        .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: typingPulse 1.2s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* INPUT */
+        .input-area { padding: 16px 28px 20px; border-top: 1px solid var(--border); background: var(--bg-secondary); }
+        .input-wrapper { display: flex; gap: 10px; max-width: 900px; margin: 0 auto; }
+        .chat-input { flex: 1; padding: 13px 18px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 14px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .chat-input::placeholder { color: var(--text-muted); }
+        .send-btn { padding: 13px 24px; background: var(--gradient); border: none; border-radius: 14px; color: white; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(59,130,246,0.3); white-space: nowrap; }
+        .send-btn:hover { box-shadow: 0 6px 25px rgba(59,130,246,0.45); transform: translateY(-1px); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .input-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; text-align: center; }
+        .input-field-wrap { flex: 1; position: relative; }
+        .input-field-wrap .chat-input { width: 100%; }
+
+        /* TOAST */
+        .toast-container { position: fixed; top: 16px; right: 16px; z-index: 3000; display: flex; flex-direction: column; gap: 8px; }
+        .toast { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.85rem; color: var(--text-primary); box-shadow: 0 8px 30px rgba(0,0,0,0.4); animation: slideDown 0.3s ease; display: flex; align-items: center; gap: 8px; min-width: 280px; }
+        .toast.success { border-left: 3px solid var(--emerald); }
+        .toast.error { border-left: 3px solid var(--rose); }
+        .toast.info { border-left: 3px solid var(--accent); }
+
+        /* LOADING */
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,14,26,0.8); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loading-text { color: var(--text-secondary); font-size: 0.9rem; }
+
+        /* PDF MODAL */
+        #pdfModal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; }
+        #pdfModal.active { display: flex; }
+        .pdf-modal-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 920px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); animation: modalSlideUp 0.3s ease; }
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(28px) scale(0.97); } to { opacity: 1; transform: none; } }
+        .pdf-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .pdf-modal-title { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .pdf-modal-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+        .pdf-modal-controls { display: flex; align-items: center; gap: 8px; }
+        .pdf-nav-btn { background: var(--bg-glass); border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .pdf-nav-btn:hover:not(:disabled) { background: rgba(59,130,246,0.1); color: var(--text-primary); border-color: var(--border-hover); }
+        .pdf-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .pdf-page-info { font-size: 0.82rem; color: var(--text-muted); min-width: 90px; text-align: center; }
+        .pdf-close-btn { background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.2); color: var(--rose); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 8px; }
+        .pdf-close-btn:hover { background: rgba(244,63,94,0.22); }
+        .pdf-canvas-wrap { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 20px; background: #12121f; }
+        #pdfPageWrap { position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.5); border-radius: 3px; line-height: 0; flex-shrink: 0; }
+        #pdfCanvas { display: block; max-width: 100%; border-radius: 3px; }
+        .textLayer { position: absolute; inset: 0; overflow: hidden; opacity: 1; line-height: 1; text-align: initial; transform-origin: 0 0; }
+        .textLayer span, .textLayer br { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0 0; }
+        .textLayer .pdf-highlight { background: rgba(255,235,59,0.30); border-radius: 3px; box-shadow: 0 0 0 1px rgba(255,235,59,0.22); }
+        .pdf-loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(--text-muted); font-size: 0.9rem; min-height: 300px; }
+        .pdf-loading-spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .pdf-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .pdf-context-hint { font-size: 0.72rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+        .pdf-download-link { font-size: 0.78rem; color: var(--accent-light); text-decoration: none; display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: 1px solid rgba(59,130,246,0.2); border-radius: 7px; transition: all 0.2s; }
+        .pdf-download-link:hover { background: rgba(59,130,246,0.08); }
+
+        /* KNOWLEDGE GRAPH */
+        #kgModal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; }
+        #kgModal.active { display: flex; }
+        .kg-modal-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 95vw; height: 90vh; max-width: 1400px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); animation: modalSlideUp 0.3s ease; }
+        .kg-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 16px; }
+        .kg-modal-title { font-size: 1rem; font-weight: 700; }
+        .kg-modal-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+        .kg-modal-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .kg-search-input { padding: 7px 12px; width: 200px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.8rem; outline: none; transition: border-color 0.2s; }
+        .kg-search-input:focus { border-color: var(--accent); }
+        .kg-body { flex: 1; position: relative; overflow: hidden; background: #0c1120; }
+        #kgNetwork { width: 100%; height: 100%; }
+
+        .kg-loading-state, .kg-empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px; }
+        .kg-loading-hint { font-size: 0.76rem; color: var(--text-muted); max-width: 380px; }
+        .kg-empty-state .empty-icon { font-size: 2.4rem; opacity: 0.5; }
+
+        .kg-legend { position: absolute; top: 16px; right: 16px; z-index: 10; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.76rem; box-shadow: var(--shadow); backdrop-filter: blur(6px); }
+        .kg-legend-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.66rem; color: var(--text-muted); margin-bottom: 8px; }
+        .kg-legend-section { display: flex; flex-direction: column; gap: 6px; }
+        .kg-legend-divider { height: 1px; background: var(--border); margin: 10px 0; }
+        .kg-legend-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); white-space: nowrap; }
+        .kg-legend-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid; flex-shrink: 0; }
+        .kg-legend-line { width: 20px; height: 2px; border-radius: 2px; flex-shrink: 0; }
+        .kg-legend-line-thick { height: 3px; }
+        .kg-legend-line-dashed { width: 20px; height: 0; border-top: 2px dashed; background: none !important; flex-shrink: 0; }
+
+        .kg-info-panel { position: absolute; top: 16px; left: 16px; z-index: 10; width: 300px; max-height: calc(100% - 32px); overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; box-shadow: var(--shadow); backdrop-filter: blur(6px); animation: fadeIn 0.2s ease; }
+        .kg-info-close { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 4px; border-radius: 6px; transition: all 0.2s; }
+        .kg-info-close:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+        .kg-info-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; padding-right: 20px; }
+        .kg-info-subtitle { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px; }
+        .kg-info-section { margin-bottom: 12px; }
+        .kg-info-section:last-child { margin-bottom: 0; }
+        .kg-info-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+        .kg-info-tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
+        .kg-info-tag { font-size: 0.74rem; padding: 3px 9px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-secondary); }
+        .kg-info-tag.condition { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); color: #34d399; }
+        .kg-info-tag.warning { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #f87171; }
+        .kg-info-tag.contraindicated { background: rgba(239,68,68,0.18); border-color: #ef4444; color: #fca5a5; font-weight: 600; }
+        .kg-info-tag.interacts { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: #fbbf24; }
+        .kg-info-empty { font-size: 0.76rem; color: var(--text-muted); font-style: italic; }
+
+        .kg-edge-tooltip { position: absolute; z-index: 20; max-width: 320px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; box-shadow: var(--shadow); font-size: 0.78rem; line-height: 1.5; color: var(--text-secondary); animation: fadeIn 0.15s ease; }
+        .kg-edge-tooltip-title { font-size: 0.72rem; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .kg-edge-tooltip-source { font-size: 0.68rem; color: var(--text-muted); margin-top: 8px; }
+        .kg-edge-tooltip-close { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes typingPulse { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .chat-area { padding: 16px; }
+            .input-area { padding: 12px 16px 16px; }
+            .example-grid { grid-template-columns: 1fr; }
+            .message-user .bubble, .message-bot .bubble { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splashScreen">
+    <div class="splash-glow"></div>
+    <div class="splash-logo">💊</div>
+    <div class="splash-title">DrugIQ</div>
+    <div class="splash-tagline">AI-Powered Drug Information Assistant</div>
+    <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+    <div class="splash-team">Cognizant NPN AIA Hackathon · Team CogniHealth</div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">💊</div>
+            <div class="logo-text">
+                <h1>DrugIQ</h1>
+                <p>AI Drug Assistant</p>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-content">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Upload Drug PDF</div>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept=".pdf" multiple>
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Drop PDF here or click to browse</div>
+                <div class="upload-hint">Prescribing information PDFs only</div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Database</div>
+            <div class="status-indicator" id="dbStatus">
+                <span class="status-dot offline"></span>
+                <span>Checking...</span>
+            </div>
+            <button class="sidebar-btn" onclick="rebuildDB()">🔄 Rebuild Database</button>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Indexed Drugs</div>
+            <div id="drugList">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <div>No drugs indexed yet.<br>Upload a PDF to get started.</div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">⚡ Drug Interaction Checker</div>
+            <div class="interaction-checker">
+                <select class="interaction-select" id="interactionDrug1">
+                    <option value="">Drug 1...</option>
+                </select>
+                <select class="interaction-select" id="interactionDrug2">
+                    <option value="">Drug 2...</option>
+                </select>
+                <button class="sidebar-btn interaction-check-btn" onclick="checkDrugInteraction()">⚡ Check Interaction</button>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <button class="sidebar-btn kg-open-btn" onclick="openKnowledgeGraph()">🕸️ Knowledge Graph</button>
+        </div>
+    </div>
+    <div class="sidebar-footer">
+        <div class="ai-disclaimer">
+            <span>⚠️</span>
+            <span>For informational use only. Always verify with a licensed healthcare professional.</span>
+        </div>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-title">💬 Chat</span>
+            <span class="topbar-badge" id="topbarBadge">RAG-Powered</span>
+        </div>
+        <div class="topbar-actions">
+            <button class="topbar-btn" onclick="clearChat()">🗑️ Clear Chat</button>
+        </div>
+    </div>
+    <div class="chat-area" id="chatArea">
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome" id="welcomeScreen">
+                <div class="welcome-icon">💊</div>
+                <h2>Ask me about your drugs</h2>
+                <p>I search official prescribing documents and provide citation-backed answers. Upload drug PDFs and ask about dosages, interactions, side effects, or conditions.</p>
+                <div class="example-grid">
+                    <div class="example-card" onclick="useExample(this)">
+                        <span class="icon">💊</span>
+                        <span class="text">What are the approved indications for this drug?</span>
+                    </div>
+                    <div class="example-card" onclick="useExample(this)">
+                        <span class="icon">⚖️</span>
+                        <span class="text">What is the recommended dosage for adults?</span>
+                    </div>
+                    <div class="example-card" onclick="useExample(this)">
+                        <span class="icon">⚠️</span>
+                        <span class="text">What are the serious side effects and warnings?</span>
+                    </div>
+                    <div class="example-card" onclick="useExample(this)">
+                        <span class="icon">🔬</span>
+                        <span class="text">Are there any known drug interactions?</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-bubble">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <span style="margin-left:6px;font-size:0.82rem;color:var(--text-muted)">Searching documents...</span>
+            </div>
+        </div>
+    </div>
+    <div class="input-area">
+        <div class="input-wrapper">
+            <div class="input-field-wrap">
+                <input type="text" class="chat-input" id="chatInput"
+                       placeholder="Ask about a drug, dosage, side effect, or condition..."
+                       onkeydown="if(event.key==='Enter')sendMessage()">
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send →</button>
+        </div>
+        <div class="input-hint">Press Enter to send · Answers sourced from uploaded prescribing documents only</div>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Processing...</div>
+</div>
+
+<!-- PDF VIEWER MODAL -->
+<div id="pdfModal">
+    <div class="pdf-modal-box">
+        <div class="pdf-modal-header">
+            <div>
+                <div class="pdf-modal-title">📄 <span id="pdfModalDrugName">Prescribing Information</span></div>
+                <div class="pdf-modal-subtitle" id="pdfModalSubtitle">Loading...</div>
+            </div>
+            <div class="pdf-modal-controls">
+                <button class="pdf-nav-btn" id="pdfPrevBtn" onclick="pdfGoPage(-1)" disabled>← Prev</button>
+                <span class="pdf-page-info" id="pdfPageInfo">— / —</span>
+                <button class="pdf-nav-btn" id="pdfNextBtn" onclick="pdfGoPage(1)" disabled>Next →</button>
+                <button class="pdf-close-btn" onclick="closePdfModal()">✕</button>
+            </div>
+        </div>
+        <div class="pdf-canvas-wrap" id="pdfCanvasWrap">
+            <div class="pdf-loading-state" id="pdfLoadingState">
+                <div class="pdf-loading-spinner"></div>
+                <span>Loading PDF...</span>
+            </div>
+            <div id="pdfPageWrap" style="display:none;">
+                <canvas id="pdfCanvas"></canvas>
+                <div id="pdfTextLayer" class="textLayer"></div>
+            </div>
+        </div>
+        <div class="pdf-footer">
+            <div class="pdf-context-hint" id="pdfContextHint">💡 Showing the cited page. Use arrows to browse the full document.</div>
+            <a id="pdfDownloadLink" href="#" target="_blank" class="pdf-download-link" download>⬇️ Download PDF</a>
+        </div>
+    </div>
+</div>
+
+<!-- KNOWLEDGE GRAPH MODAL -->
+<div id="kgModal">
+    <div class="kg-modal-box">
+        <div class="kg-modal-header">
+            <div>
+                <div class="kg-modal-title">🕸️ Drug Knowledge Graph</div>
+                <div class="kg-modal-subtitle">Relationships extracted from prescribing documents</div>
+            </div>
+            <div class="kg-modal-controls">
+                <input type="text" class="kg-search-input" id="kgSearchInput" placeholder="🔍 Search drug or condition..." oninput="kgHandleSearch(this.value)">
+                <button class="pdf-nav-btn" onclick="kgRebuild()" id="kgRebuildBtn">🔄 Rebuild Graph</button>
+                <button class="pdf-close-btn" onclick="closeKnowledgeGraph()">✕</button>
+            </div>
+        </div>
+        <div class="kg-body" id="kgBody">
+            <div class="kg-loading-state" id="kgLoadingState">
+                <div class="pdf-loading-spinner"></div>
+                <span id="kgLoadingText">Extracting relationships from prescribing documents...</span>
+                <span class="kg-loading-hint">First load may take 10–15 seconds — the LLM is reading each drug's prescribing document.</span>
+            </div>
+            <div class="kg-empty-state" id="kgEmptyState" style="display:none;">
+                <div class="empty-icon">🕸️</div>
+                <div id="kgEmptyMessage">No relationships yet. Upload drug PDFs, then click Rebuild Graph.</div>
+            </div>
+            <div id="kgNetwork" style="display:none;"></div>
+
+            <div class="kg-legend" id="kgLegend" style="display:none;">
+                <div class="kg-legend-title">Legend</div>
+                <div class="kg-legend-section">
+                    <div class="kg-legend-item"><span class="kg-legend-dot" style="background:#3b82f6;border-color:#60a5fa"></span>💊 Drug</div>
+                    <div class="kg-legend-item"><span class="kg-legend-dot" style="background:#10b981;border-color:#34d399"></span>🏥 Condition</div>
+                    <div class="kg-legend-item"><span class="kg-legend-dot" style="background:#8b5cf6;border-color:#a78bfa"></span>⚗️ Drug Class</div>
+                    <div class="kg-legend-item"><span class="kg-legend-dot" style="background:#ef4444;border-color:#f87171"></span>⚠️ Warning</div>
+                </div>
+                <div class="kg-legend-divider"></div>
+                <div class="kg-legend-section">
+                    <div class="kg-legend-item"><span class="kg-legend-line" style="background:#10b981"></span>treats</div>
+                    <div class="kg-legend-item"><span class="kg-legend-line" style="background:#f59e0b"></span>interacts with</div>
+                    <div class="kg-legend-item"><span class="kg-legend-line kg-legend-line-thick" style="background:#ef4444"></span>contraindicated with</div>
+                    <div class="kg-legend-item"><span class="kg-legend-line" style="background:#8b5cf6"></span>belongs to</div>
+                    <div class="kg-legend-item"><span class="kg-legend-line kg-legend-line-dashed" style="border-color:#f87171"></span>shares warning</div>
+                </div>
+            </div>
+
+            <div class="kg-info-panel" id="kgInfoPanel" style="display:none;">
+                <button class="kg-info-close" onclick="kgClearSelection()">✕</button>
+                <div id="kgInfoContent"></div>
+            </div>
+
+            <div class="kg-edge-tooltip" id="kgEdgeTooltip" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Splash ────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+        setTimeout(() => document.getElementById('splashScreen').classList.add('hidden'), 2300);
+    });
+    document.getElementById('splashScreen').addEventListener('click', () => {
+        document.getElementById('splashScreen').classList.add('hidden');
+    });
+
+    // ── State ─────────────────────────────────────────────────────
+    let sessionId = generateId();
+    let apiKey = '';
+    let citationIdSeq = 0;
+    const citationDataStore = {};
+    // drug name (lowercased) -> DOM id of its overview card, so re-asking
+    // "What is X?" scrolls back to the existing card instead of duplicating it
+    const overviewCardsShown = new Map();
+    // cardId -> { sectionKey: renderedHtml } so re-clicking a section doesn't re-fetch
+    const overviewSectionCache = {};
+
+    const OVERVIEW_SECTIONS = [
+        { key: 'composition', icon: '🧪', label: 'Composition', question: d => `What is the composition of ${d}? Answer in bullet points only.` },
+        { key: 'usage', icon: '🩺', label: 'Usage / Indications', question: d => `What is ${d} used for / indicated for? Answer in bullet points only.` },
+        { key: 'dosage', icon: '💊', label: 'Dosage', question: d => `What is the recommended dosage of ${d}? Answer in bullet points only.` },
+        { key: 'side_effects', icon: '⚠️', label: 'Side Effects', question: d => `What are the side effects of ${d}? Answer in bullet points only.` },
+    ];
+
+    function slugify(s) {
+        return (s || 'drug').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '') || 'drug';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        checkStatus();
+        loadDrugs();
+        setupUpload();
+    });
+
+    function generateId() { return 'sid_' + Math.random().toString(36).substr(2, 9); }
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────
+    function showToast(msg, type = 'info') {
+        const c = document.getElementById('toastContainer');
+        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+        const t = document.createElement('div');
+        t.className = 'toast ' + type;
+        t.innerHTML = '<span>' + (icons[type] || 'ℹ️') + '</span> ' + escapeHtml(msg);
+        c.appendChild(t);
+        setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(30px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, 4000);
+    }
+
+    function showLoading(text='Processing...') { document.getElementById('loadingText').textContent=text; document.getElementById('loadingOverlay').classList.add('active'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+
+    // ── Status ────────────────────────────────────────────────────
+    async function checkStatus() {
+        try {
+            const d = await (await fetch('/api/status')).json();
+            const el = document.getElementById('dbStatus');
+            if (d.db_ready) {
+                el.innerHTML = '<span class="status-dot online"></span> <span>Database active · ' + d.pdf_count + ' PDF(s)</span>';
+            } else {
+                el.innerHTML = '<span class="status-dot offline"></span> <span>Not loaded · ' + d.pdf_count + ' PDF(s) on disk</span>';
+            }
+        } catch(e) {}
+    }
+
+    // ── Drugs List ────────────────────────────────────────────────
+    async function loadDrugs() {
+        try {
+            const d = await (await fetch('/api/drugs')).json();
+            knownDrugs = d.drugs || [];
+            populateInteractionDropdowns(knownDrugs);
+            const c = document.getElementById('drugList');
+            if (!d.drugs || d.drugs.length === 0) {
+                c.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>No drugs indexed yet.<br>Upload a PDF to get started.</div></div>';
+                return;
+            }
+            c.innerHTML = d.drugs.map(drug => `
+                <div class="drug-card">
+                    <div class="drug-info">
+                        <div class="drug-name">💊 ${escapeHtml(drug.drug_name)}</div>
+                        <div class="drug-meta">${drug.page_count} pages · ${drug.chunk_count} chunks</div>
+                    </div>
+                    <button class="drug-remove" onclick="removeDrug('${escapeHtml(drug.source_file)}')" title="Remove">✕</button>
+                </div>`).join('');
+        } catch(e) {}
+    }
+
+    // ── Drug Interaction Checker ─────────────────────────────────
+    function populateInteractionDropdowns(drugs) {
+        const sel1 = document.getElementById('interactionDrug1');
+        const sel2 = document.getElementById('interactionDrug2');
+        if (!sel1 || !sel2) return;
+        const prev1 = sel1.value, prev2 = sel2.value;
+        const options = (drugs || []).map(d =>
+            `<option value="${escapeHtml(d.drug_name)}">${escapeHtml(d.drug_name.split('(')[0].trim())}</option>`
+        ).join('');
+        sel1.innerHTML = '<option value="">Drug 1...</option>' + options;
+        sel2.innerHTML = '<option value="">Drug 2...</option>' + options;
+        if (drugs.some(d => d.drug_name === prev1)) sel1.value = prev1;
+        if (drugs.some(d => d.drug_name === prev2)) sel2.value = prev2;
+    }
+
+    async function checkDrugInteraction() {
+        const d1 = document.getElementById('interactionDrug1').value;
+        const d2 = document.getElementById('interactionDrug2').value;
+        if (!d1 || !d2) { showToast('Select two drugs to check.', 'error'); return; }
+        if (d1 === d2) { showToast('Select two different drugs.', 'error'); return; }
+
+        const name1 = d1.split('(')[0].trim();
+        const name2 = d2.split('(')[0].trim();
+        const question = `What is the drug interaction between ${name1} and ${name2}? Are they contraindicated or safe to use together?`;
+
+        const ws = document.getElementById('welcomeScreen');
+        if (ws) ws.style.display = 'none';
+        addUserMsg(question);
+        const typing = document.getElementById('typingIndicator');
+        typing.classList.add('active');
+        scrollToBottom();
+
+        // Fresh, isolated session so the checker's Q&A doesn't mix into the
+        // main conversation's context — same pattern as overview card sections.
+        const tempSessionId = 'sid_tmp_' + Math.random().toString(36).slice(2, 11);
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({question, session_id: tempSessionId, api_key: apiKey || null})
+            });
+            const data = await res.json();
+            typing.classList.remove('active');
+            if (data.error) { showToast(data.error, 'error'); return; }
+            addBotMsg(data);
+        } catch(e) {
+            typing.classList.remove('active');
+            showToast('Failed to check interaction. Is the server running?', 'error');
+        } finally {
+            fetch('/api/clear', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({session_id: tempSessionId})}).catch(()=>{});
+        }
+    }
+
+    // Parses the first line of a drug_interaction answer for the status
+    // marker the backend was instructed to always lead with.
+    function parseInteractionStatus(answer) {
+        const firstLine = (answer || '').split('\n')[0].trim();
+        if (firstLine.includes('🚫')) return { emoji: '🚫', label: 'CONTRAINDICATED', cls: 'contraindicated' };
+        if (firstLine.includes('⚠️') && firstLine.toUpperCase().includes('CAUTION')) return { emoji: '⚠️', label: 'USE WITH CAUTION', cls: 'caution' };
+        if (firstLine.includes('✅')) return { emoji: '✅', label: 'NO INTERACTION FOUND', cls: 'safe' };
+        return null;
+    }
+
+    async function removeDrug(filename) {
+        if (!confirm('Remove ' + filename + ' from the database?')) return;
+        try {
+            const d = await (await fetch('/api/drugs/' + encodeURIComponent(filename), {method:'DELETE'})).json();
+            if (d.success) { showToast(d.message, 'success'); loadDrugs(); checkStatus(); }
+            else showToast(d.error || 'Failed', 'error');
+        } catch(e) { showToast('Error removing drug', 'error'); }
+    }
+
+    async function rebuildDB() {
+        showLoading('Rebuilding database...');
+        try {
+            const d = await (await fetch('/api/build', {method:'POST'})).json();
+            hideLoading();
+            if (d.success) { showToast(d.message, 'success'); loadDrugs(); checkStatus(); }
+            else showToast(d.error || 'Rebuild failed', 'error');
+        } catch(e) { hideLoading(); showToast('Error rebuilding', 'error'); }
+    }
+
+    // ── Upload ────────────────────────────────────────────────────
+    function setupUpload() {
+        const area = document.getElementById('uploadArea');
+        const input = document.getElementById('fileInput');
+        area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+        area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+        area.addEventListener('drop', e => { e.preventDefault(); area.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
+        input.addEventListener('change', () => { if(input.files.length) { handleFiles(input.files); input.value=''; } });
+    }
+
+    async function handleFiles(files) {
+        for (const file of files) {
+            if (!file.name.toLowerCase().endsWith('.pdf')) { showToast(file.name + ' is not a PDF', 'error'); continue; }
+            showLoading('Indexing ' + file.name + '...');
+            const fd = new FormData(); fd.append('file', file);
+            try {
+                const d = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
+                if (d.success) showToast(d.message, 'success');
+                else showToast(d.error || 'Upload failed', 'error');
+            } catch(e) { showToast('Error uploading ' + file.name, 'error'); }
+        }
+        hideLoading(); loadDrugs(); checkStatus();
+    }
+
+    // ── Chat ──────────────────────────────────────────────────────
+    function useExample(el) {
+        document.getElementById('chatInput').value = el.querySelector('.text').textContent;
+        sendMessage();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const question = input.value.trim();
+        if (!question) return;
+        const ws = document.getElementById('welcomeScreen');
+        if (ws) ws.style.display = 'none';
+        addUserMsg(question);
+        input.value = '';
+        const typing = document.getElementById('typingIndicator');
+        typing.classList.add('active');
+        scrollToBottom();
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = true;
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({question, session_id: sessionId, api_key: apiKey || null})
+            });
+            const data = await res.json();
+            typing.classList.remove('active');
+            sendBtn.disabled = false;
+            if (data.error) { showToast(data.error, 'error'); return; }
+            addBotMsg(data);
+        } catch(e) {
+            typing.classList.remove('active');
+            sendBtn.disabled = false;
+            showToast('Failed to get response. Is the server running?', 'error');
+        }
+    }
+
+    function addUserMsg(content) {
+        const c = document.getElementById('chatMessages');
+        const d = document.createElement('div');
+        d.className = 'message message-user';
+        d.innerHTML = '<div class="bubble">🧑‍⚕️ ' + escapeHtml(content) + '</div>';
+        c.appendChild(d);
+        scrollToBottom();
+    }
+
+    // Builds the "Sources Referenced" block shared by chat answers and
+    // overview-card sections, registering each page pill in citationDataStore
+    // so the PDF viewer can look up its file/page/highlight snippets on click.
+    function renderCitationsBlock(citations) {
+        if (!citations || !citations.length) return '';
+        let html = '<div class="citations-container"><div class="citation-card">';
+        html += '<div class="citation-header">📄 Sources Referenced</div>';
+        citations.forEach(cite => {
+            const pages = cite.pages || [];
+            const dn = escapeHtml(cite.drug_name);
+            const sf = cite.source_file;
+            const snippets = cite.page_snippets || {};
+            const pills = pages.map(p => {
+                const id = 'cit_' + (citationIdSeq++);
+                citationDataStore[id] = {
+                    file: sf,
+                    page: p,
+                    drugName: cite.drug_name,
+                    snippets: snippets[String(p)] || []
+                };
+                return `<button class="page-pill" onclick="openPdfViewer('${id}')">📄 Page ${p}</button>`;
+            }).join('');
+            html += `<div class="citation-item">
+                <div class="citation-drug-name">💊 ${dn}</div>
+                <div class="citation-pages-row">
+                    <span class="citation-pages-label">Cited pages:</span>
+                    ${pills}
+                </div>
+            </div>`;
+        });
+        html += '</div></div>';
+        return html;
+    }
+
+    function formatAnswerHtml(answer) {
+        let html = escapeHtml(answer || '');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\n/g, '<br>');
+        return html;
+    }
+
+    function addBotMsg(data) {
+        const c = document.getElementById('chatMessages');
+
+        if (data.query_type === 'overview_menu' && data.drug_name) {
+            const key = data.drug_name.toLowerCase();
+            if (overviewCardsShown.has(key)) {
+                c.insertAdjacentHTML('beforeend', renderBackToMenuPrompt(data.drug_name, overviewCardsShown.get(key)));
+            } else {
+                const cardId = 'overview-card-' + slugify(data.drug_name);
+                overviewCardsShown.set(key, cardId);
+                c.insertAdjacentHTML('beforeend', renderOverviewCard(data.drug_name, cardId));
+            }
+            scrollToBottom();
+            return;
+        }
+
+        let html = '<div class="message message-bot">';
+
+        if (data.query_type === 'condition_to_drug') {
+            html += '<div class="query-badge condition">🔍 Condition Lookup</div>';
+        } else if (data.query_type === 'general') {
+            html += '<div class="query-badge general">💊 Drug Info</div>';
+        }
+
+        let bubbleAnswer = data.answer;
+        if (data.query_type === 'drug_interaction') {
+            const status = parseInteractionStatus(data.answer);
+            if (status) {
+                html += `<div class="interaction-status-badge ${status.cls}">${status.emoji} ${status.label}</div>`;
+                const lines = (data.answer || '').split('\n');
+                lines.shift();
+                bubbleAnswer = lines.join('\n').trim();
+            }
+        }
+
+        html += '<div class="bubble">💊 ' + formatAnswerHtml(bubbleAnswer) + '</div>';
+
+        if (!data.refused) {
+            html += renderCitationsBlock(data.citations);
+        }
+
+        // The unknown-drug answer already fully explains the situation —
+        // skip the generic box there to avoid saying the same thing twice.
+        if (data.refused && data.query_type !== 'unknown_drug') {
+            html += '<div class="refused-box">⚠️ Could not find reliable information in the loaded documents. Please consult official prescribing information or a healthcare professional.</div>';
+        }
+
+        html += '</div>';
+        c.insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+    }
+
+    // ── Overview Menu Card ───────────────────────────────────────────
+    function renderOverviewCard(drugName, cardId) {
+        const buttons = OVERVIEW_SECTIONS.map(s =>
+            `<button class="overview-section-btn" data-section="${s.key}" onclick="toggleOverviewSection(this)">
+                <span class="icon">${s.icon}</span><span class="label">${escapeHtml(s.label)}</span>
+            </button>`
+        ).join('');
+        return `<div class="message message-bot">
+            <div class="overview-card" id="${cardId}" data-drug="${escapeHtml(drugName)}">
+                <div class="overview-card-header">
+                    <span class="overview-card-icon">💊</span>
+                    <div>
+                        <div class="overview-card-title">${escapeHtml(drugName)}</div>
+                        <div class="overview-card-subtitle">Choose a section to explore</div>
+                    </div>
+                </div>
+                <div class="overview-card-grid">${buttons}</div>
+                <div class="overview-card-panel" id="${cardId}-panel" style="display:none"></div>
+            </div>
+        </div>`;
+    }
+
+    function renderBackToMenuPrompt(drugName, cardId) {
+        return `<div class="message message-bot">
+            <div class="back-to-menu-box">
+                <span>💊 ${escapeHtml(drugName)}'s menu is already open above.</span>
+                <button class="back-to-menu-btn" onclick="scrollToOverviewCard('${cardId}')">↑ Back to Menu</button>
+            </div>
+        </div>`;
+    }
+
+    function scrollToOverviewCard(cardId) {
+        const el = document.getElementById(cardId);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('flash-highlight');
+        setTimeout(() => el.classList.remove('flash-highlight'), 1200);
+    }
+
+    async function toggleOverviewSection(btn) {
+        const card = btn.closest('.overview-card');
+        const cardId = card.id;
+        const drugName = card.dataset.drug;
+        const sectionKey = btn.dataset.section;
+        const panel = document.getElementById(cardId + '-panel');
+
+        card.querySelectorAll('.overview-section-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        panel.style.display = 'block';
+
+        overviewSectionCache[cardId] = overviewSectionCache[cardId] || {};
+        if (overviewSectionCache[cardId][sectionKey]) {
+            panel.innerHTML = overviewSectionCache[cardId][sectionKey];
+            scrollToOverviewCard(cardId);
+            return;
+        }
+
+        panel.innerHTML = '<div class="overview-panel-loading"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+
+        const section = OVERVIEW_SECTIONS.find(s => s.key === sectionKey);
+        const question = section.question(drugName);
+        const tempSessionId = 'sid_tmp_' + Math.random().toString(36).slice(2, 11);
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, session_id: tempSessionId, api_key: apiKey || null })
+            });
+            const data = await res.json();
+            if (data.error) {
+                panel.innerHTML = `<div class="overview-panel-error">⚠️ ${escapeHtml(data.error)}</div>`;
+                return;
+            }
+            let html = `<div class="overview-panel-answer">${formatAnswerHtml(data.answer)}</div>`;
+            if (data.refused) {
+                html += '<div class="refused-box">⚠️ Could not find reliable information in the loaded documents.</div>';
+            } else {
+                html += renderCitationsBlock(data.citations);
+            }
+            overviewSectionCache[cardId][sectionKey] = html;
+            panel.innerHTML = html;
+        } catch (e) {
+            panel.innerHTML = '<div class="overview-panel-error">⚠️ Failed to load this section. Try again.</div>';
+        } finally {
+            // Fresh temp session per section fetch keeps this out of the
+            // user's main conversation history — clean it up server-side too.
+            fetch('/api/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: tempSessionId })
+            }).catch(() => {});
+        }
+    }
+
+    function scrollToBottom() {
+        const area = document.getElementById('chatArea');
+        setTimeout(() => { area.scrollTop = area.scrollHeight; }, 50);
+    }
+
+    async function clearChat() {
+        try {
+            await fetch('/api/clear', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({session_id:sessionId})});
+        } catch(e) {}
+        sessionId = generateId();
+        overviewCardsShown.clear();
+        for (const key in overviewSectionCache) delete overviewSectionCache[key];
+        document.getElementById('chatMessages').innerHTML = `
+            <div class="welcome" id="welcomeScreen">
+                <div class="welcome-icon">💊</div>
+                <h2>Ask me about your drugs</h2>
+                <p>I search official prescribing documents and provide citation-backed answers. Upload drug PDFs and ask about dosages, interactions, side effects, or conditions.</p>
+                <div class="example-grid">
+                    <div class="example-card" onclick="useExample(this)"><span class="icon">💊</span><span class="text">What are the approved indications for this drug?</span></div>
+                    <div class="example-card" onclick="useExample(this)"><span class="icon">⚖️</span><span class="text">What is the recommended dosage for adults?</span></div>
+                    <div class="example-card" onclick="useExample(this)"><span class="icon">⚠️</span><span class="text">What are the serious side effects and warnings?</span></div>
+                    <div class="example-card" onclick="useExample(this)"><span class="icon">🔬</span><span class="text">Are there any known drug interactions?</span></div>
+                </div>
+            </div>`;
+        showToast('Chat cleared', 'info');
+    }
+
+    // ── PDF Viewer ────────────────────────────────────────────────
+    let pdfDoc = null, pdfCurrentPage = 1, pdfTotalPages = 0, pdfRendering = false, pdfCurrentFile = '';
+    let pdfHighlightSnippets = [], pdfHighlightPage = null;
+
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    function openPdfViewer(citationId) {
+        const data = citationDataStore[citationId];
+        if (!data) return;
+        pdfCurrentFile = data.file;
+        pdfHighlightSnippets = data.snippets || [];
+        pdfHighlightPage = data.page || 1;
+        document.getElementById('pdfModalDrugName').textContent = data.drugName || 'Prescribing Information';
+        document.getElementById('pdfModalSubtitle').textContent = data.file;
+        document.getElementById('pdfDownloadLink').href = '/api/download/' + encodeURIComponent(data.file);
+        document.getElementById('pdfModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadPdf(data.file, pdfHighlightPage);
+    }
+
+    async function loadPdf(filename, targetPage) {
+        const pageWrap = document.getElementById('pdfPageWrap');
+        const ls = document.getElementById('pdfLoadingState');
+        pageWrap.style.display = 'none';
+        ls.style.display = 'flex';
+        ls.innerHTML = '<div class="pdf-loading-spinner"></div><span>Loading PDF...</span>';
+        document.getElementById('pdfPrevBtn').disabled = true;
+        document.getElementById('pdfNextBtn').disabled = true;
+        document.getElementById('pdfPageInfo').textContent = '— / —';
+
+        try {
+            if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js not available');
+            const url = '/api/download/' + encodeURIComponent(filename);
+            pdfDoc = await pdfjsLib.getDocument(url).promise;
+            pdfTotalPages = pdfDoc.numPages;
+            pdfCurrentPage = Math.max(1, Math.min(targetPage, pdfTotalPages));
+            ls.style.display = 'none';
+            pageWrap.style.display = 'block';
+            await renderPage(pdfCurrentPage);
+        } catch(err) {
+            ls.innerHTML = '<span style="font-size:2rem">⚠️</span><span style="color:var(--amber)">Could not render PDF.</span><a href="/api/download/' + encodeURIComponent(filename) + '" download target="_blank" style="color:var(--accent-light);font-size:0.82rem;margin-top:4px">⬇️ Download instead</a>';
+        }
+    }
+
+    async function renderPage(pageNum) {
+        if (!pdfDoc || pdfRendering) return;
+        pdfRendering = true;
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const canvas = document.getElementById('pdfCanvas');
+            const ctx = canvas.getContext('2d');
+            const desiredWidth = Math.min(window.innerWidth * 0.72, 820);
+            const vp = page.getViewport({scale:1});
+            const scale = desiredWidth / vp.width;
+            const svp = page.getViewport({scale});
+            canvas.width = svp.width;
+            canvas.height = svp.height;
+
+            const pageWrap = document.getElementById('pdfPageWrap');
+            pageWrap.style.width = svp.width + 'px';
+            pageWrap.style.height = svp.height + 'px';
+
+            const needsHighlight = pdfHighlightSnippets.length > 0 && pageNum === pdfHighlightPage;
+            const [, textContent] = await Promise.all([
+                page.render({canvasContext: ctx, viewport: svp}).promise,
+                needsHighlight ? page.getTextContent() : Promise.resolve(null)
+            ]);
+            pdfCurrentPage = pageNum;
+            document.getElementById('pdfPageInfo').textContent = 'Page ' + pageNum + ' of ' + pdfTotalPages;
+            document.getElementById('pdfModalSubtitle').textContent = pdfCurrentFile + ' — Page ' + pageNum + ' of ' + pdfTotalPages;
+
+            const highlighted = await renderHighlightLayer(svp, textContent);
+            const hint = document.getElementById('pdfContextHint');
+            hint.textContent = highlighted
+                ? '💡 Highlighted text is exactly where this answer came from.'
+                : '💡 Showing the cited page. Use arrows to browse the full document.';
+        } finally {
+            pdfRendering = false;
+            document.getElementById('pdfPrevBtn').disabled = pdfCurrentPage <= 1;
+            document.getElementById('pdfNextBtn').disabled = pdfCurrentPage >= pdfTotalPages;
+        }
+    }
+
+    function normalizeForMatch(s) {
+        return s.replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+
+    // Renders PDF.js's text layer (invisible, selectable text positioned
+    // exactly over the canvas) then highlights whichever spans contain the
+    // source snippet(s) used to generate the answer, so the doctor can see
+    // exactly where the cited text lives instead of re-reading the page.
+    async function renderHighlightLayer(viewport, textContent) {
+        const layer = document.getElementById('pdfTextLayer');
+        layer.innerHTML = '';
+        layer.style.width = viewport.width + 'px';
+        layer.style.height = viewport.height + 'px';
+        layer.style.setProperty('--scale-factor', viewport.scale);
+
+        if (!textContent) return false;
+
+        try {
+            const textDivs = [];
+            const renderTask = pdfjsLib.renderTextLayer({
+                textContent, container: layer, viewport, textDivs
+            });
+            await renderTask.promise;
+            return highlightSnippetsInLayer(textDivs, textContent.items, pdfHighlightSnippets);
+        } catch (e) {
+            console.warn('Highlight layer failed:', e);
+            return false;
+        }
+    }
+
+    // Keeps only letters/digits (lowercased) plus a map back to the
+    // position in the original string for each kept character. Matching on
+    // this stripped form makes highlighting resilient to the two extractors
+    // (pdfplumber server-side vs. PDF.js in the browser) disagreeing on
+    // bullets, hyphenation, brackets, or incidental whitespace.
+    function buildStrippedIndex(s) {
+        let stripped = '';
+        const map = [];
+        for (let i = 0; i < s.length; i++) {
+            if (/[a-z0-9]/i.test(s[i])) {
+                stripped += s[i].toLowerCase();
+                map.push(i);
+            }
+        }
+        return { stripped, map };
+    }
+
+    // Looks for the snippet's alphanumeric skeleton in the page's stripped
+    // text, backing off to shorter prefixes if the full snippet doesn't
+    // line up exactly (e.g. the chunk was truncated mid-sentence server-side).
+    function findBestMatch(stripped, needleRaw) {
+        const needle = (needleRaw.match(/[a-z0-9]/gi) || []).join('').toLowerCase();
+        if (needle.length < 20) return null;
+        const lens = [...new Set([needle.length, 150, 90, 50].filter(l => l <= needle.length && l >= 20))];
+        for (const len of lens) {
+            const idx = stripped.indexOf(needle.slice(0, len));
+            if (idx !== -1) return { idx, len };
+        }
+        return null;
+    }
+
+    // A '.' flanked by digits on both sides is a decimal point in a section
+    // reference like "(5.4)", not a sentence end — treating it as one was
+    // truncating highlights right in the middle of a citation marker.
+    function isDecimalPoint(combined, i) {
+        return combined[i] === '.' &&
+            i > 0 && /[0-9]/.test(combined[i - 1]) &&
+            i + 1 < combined.length && /[0-9]/.test(combined[i + 1]);
+    }
+
+    // Grows a raw character match out to full sentence/bullet/line
+    // boundaries so the reader sees a complete, readable claim instead of a
+    // fragment cut off mid-word or mid-clause. A real line break (from
+    // PDF.js's own hasEOL flag, encoded below as '\n') is the strongest
+    // signal — it means the current bullet or heading genuinely ended.
+    function expandToSentence(combined, start, end) {
+        const maxRadius = 180;
+        const backLimit = Math.max(0, start - maxRadius);
+        let s = backLimit;
+        for (let i = start - 1; i >= backLimit; i--) {
+            const c = combined[i];
+            if (c === '\n' || c === '•') { s = i + 1; break; }
+            if ((c === '.' || c === '!' || c === '?' || c === ':') && !isDecimalPoint(combined, i)) { s = i + 1; break; }
+        }
+        while (s < start && (combined[s] === ' ' || combined[s] === '\n')) s++;
+
+        const fwdLimit = Math.min(combined.length, end + maxRadius);
+        let e = fwdLimit;
+        for (let i = end; i < fwdLimit; i++) {
+            const c = combined[i];
+            if (c === '\n' || c === '•') { e = i; break; }
+            if ((c === '.' || c === '!' || c === '?' || c === ':') && !isDecimalPoint(combined, i)) { e = i + 1; break; }
+        }
+        return { start: s, end: e };
+    }
+
+    // Picks which spans within [matchStart, matchEnd) should actually get
+    // highlighted. A naive "any character overlap" test lets a match that
+    // starts or ends mid-span drag in a neighboring word that isn't really
+    // part of the cited text (a single visual word can be split across
+    // adjacent PDF.js text items), so this applies word-boundary-aware
+    // rules instead:
+    //   1. Blank/whitespace-only spans are never eligible (already true by
+    //      construction — see the `if (!norm) return` below — reasserted
+    //      here defensively).
+    //   2. A span at the START edge is dropped if the match begins strictly
+    //      inside it — the highlight instead starts at the next span, so it
+    //      never begins mid-word.
+    //   3. A span at the END edge is always kept in full when the match
+    //      ends inside it, so the highlight ends at that word's natural
+    //      boundary rather than being clipped mid-word.
+    //   4. A span only counts if the match covers at least 40% of its
+    //      characters, to drop incidental sliver overlaps at the edges.
+    //   5. If those rules leave fewer than 2 spans, fall back to the plain
+    //      overlap set — a slightly loose highlight beats none at all.
+    function selectSpansForRange(ranges, matchStart, matchEnd) {
+        const overlapping = ranges.filter(r =>
+            r.end > matchStart && r.start < matchEnd && (r.span.textContent || '').trim() !== ''
+        );
+        if (!overlapping.length) return [];
+
+        const lastIdx = overlapping.length - 1;
+        const strict = overlapping.filter((r, idx) => {
+            // End boundary: always keep the last span in full, even if the
+            // match ends partway through it, so the highlight finishes at
+            // that word's natural end rather than being clipped mid-word.
+            if (idx === lastIdx) return true;
+
+            // Start boundary: drop the first span if the match begins
+            // partway through it, so the highlight starts at the next
+            // word instead of mid-word.
+            if (idx === 0 && matchStart > r.start) return false;
+
+            // Everything else needs meaningful overlap to count, so a
+            // sliver touch at an edge doesn't get swept in.
+            const overlapStart = Math.max(r.start, matchStart);
+            const overlapEnd = Math.min(r.end, matchEnd);
+            const spanLen = Math.max(1, r.end - r.start);
+            return (overlapEnd - overlapStart) / spanLen >= 0.4;
+        });
+
+        return strict.length >= 2 ? strict : overlapping;
+    }
+
+    function highlightSnippetsInLayer(divs, items, snippets) {
+        if (!divs.length) return false;
+
+        let combined = '';
+        const ranges = [];
+        divs.forEach((span, i) => {
+            const norm = normalizeForMatch((span && span.textContent) || '');
+            if (!norm) return;
+            if (combined.length) combined += (items[i] && items[i].hasEOL) ? '\n' : ' ';
+            const start = combined.length;
+            combined += norm;
+            ranges.push({ start, end: combined.length, span });
+        });
+        if (!combined) return false;
+
+        const { stripped, map } = buildStrippedIndex(combined);
+
+        let didHighlight = false;
+        let firstSpan = null;
+        snippets.forEach(snippetText => {
+            const match = findBestMatch(stripped, snippetText);
+            if (!match) return;
+            const combinedStart = map[match.idx];
+            const combinedEnd = map[match.idx + match.len - 1] + 1;
+            const { start: expStart, end: expEnd } = expandToSentence(combined, combinedStart, combinedEnd);
+            selectSpansForRange(ranges, expStart, expEnd).forEach(r => {
+                r.span.classList.add('pdf-highlight');
+                didHighlight = true;
+                if (!firstSpan) firstSpan = r.span;
+            });
+        });
+
+        if (firstSpan) firstSpan.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return didHighlight;
+    }
+
+    function pdfGoPage(delta) {
+        const np = pdfCurrentPage + delta;
+        if (np >= 1 && np <= pdfTotalPages && !pdfRendering) renderPage(np);
+    }
+
+    function closePdfModal() {
+        document.getElementById('pdfModal').classList.remove('active');
+        document.body.style.overflow = '';
+        pdfDoc = null; pdfCurrentPage = 1; pdfTotalPages = 0; pdfRendering = false;
+        pdfHighlightSnippets = []; pdfHighlightPage = null;
+        const pageWrap = document.getElementById('pdfPageWrap');
+        pageWrap.style.display = 'none';
+        const canvas = document.getElementById('pdfCanvas');
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('pdfTextLayer').innerHTML = '';
+        const ls = document.getElementById('pdfLoadingState');
+        ls.style.display = 'flex';
+        ls.innerHTML = '<div class="pdf-loading-spinner"></div><span>Loading PDF...</span>';
+        document.getElementById('pdfContextHint').textContent = '💡 Showing the cited page. Use arrows to browse the full document.';
+    }
+
+    document.getElementById('pdfModal').addEventListener('click', e => { if(e.target.id==='pdfModal') closePdfModal(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape' && document.getElementById('pdfModal').classList.contains('active')) closePdfModal(); });
+
+    // ── Knowledge Graph ──────────────────────────────────────────
+    let kgData = null, kgNetwork = null, kgNodesDataSet = null, kgEdgesDataSet = null, kgSelectedNodeId = null;
+    let kgSearchDebounce = null;
+
+    const KG_NODE_STYLES = {
+        drug:      { color: { background: '#3b82f6', border: '#60a5fa' }, size: 30, icon: '💊' },
+        condition: { color: { background: '#10b981', border: '#34d399' }, size: 20, icon: '🏥' },
+        class:     { color: { background: '#8b5cf6', border: '#a78bfa' }, size: 18, icon: '⚗️' },
+        warning:   { color: { background: '#ef4444', border: '#f87171' }, size: 16, icon: '⚠️' },
+    };
+    const KG_EDGE_STYLES = {
+        treats:               { color: '#10b981', width: 1.5, dashes: false },
+        interacts_with:       { color: '#f59e0b', width: 1.5, dashes: false },
+        contraindicated_with: { color: '#ef4444', width: 3,   dashes: false },
+        belongs_to:           { color: '#8b5cf6', width: 1.5, dashes: false },
+        shares_warning:       { color: '#f87171', width: 1.5, dashes: [4, 4] },
+    };
+
+    function openKnowledgeGraph() {
+        document.getElementById('kgModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (!kgData) loadKnowledgeGraph(false);
+    }
+
+    function closeKnowledgeGraph() {
+        document.getElementById('kgModal').classList.remove('active');
+        document.body.style.overflow = '';
+        kgHideEdgeTooltip();
+    }
+
+    async function loadKnowledgeGraph(forceRebuild) {
+        const loading = document.getElementById('kgLoadingState');
+        const empty = document.getElementById('kgEmptyState');
+        const networkEl = document.getElementById('kgNetwork');
+        const legend = document.getElementById('kgLegend');
+
+        loading.style.display = 'flex';
+        empty.style.display = 'none';
+        networkEl.style.display = 'none';
+        legend.style.display = 'none';
+        document.getElementById('kgInfoPanel').style.display = 'none';
+        kgHideEdgeTooltip();
+
+        try {
+            const url = forceRebuild ? '/api/knowledge-graph/rebuild' : '/api/knowledge-graph';
+            const res = await fetch(url, { method: forceRebuild ? 'POST' : 'GET' });
+            const data = await res.json();
+            loading.style.display = 'none';
+
+            if (data.error) {
+                document.getElementById('kgEmptyMessage').textContent = data.error;
+                empty.style.display = 'flex';
+                showToast(data.error, 'error');
+                return;
+            }
+            if (!data.nodes || data.nodes.length === 0) {
+                document.getElementById('kgEmptyMessage').textContent = 'No relationships yet. Upload drug PDFs, then click Rebuild Graph.';
+                empty.style.display = 'flex';
+                return;
+            }
+
+            renderKnowledgeGraph(data);
+            networkEl.style.display = 'block';
+            legend.style.display = 'block';
+        } catch (e) {
+            loading.style.display = 'none';
+            document.getElementById('kgEmptyMessage').textContent = 'Failed to load the knowledge graph.';
+            empty.style.display = 'flex';
+            showToast('Failed to load knowledge graph', 'error');
+        }
+    }
+
+    async function kgRebuild() {
+        const btn = document.getElementById('kgRebuildBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Rebuilding...';
+        document.getElementById('kgLoadingText').textContent = 'Rebuilding relationships from prescribing documents...';
+        await loadKnowledgeGraph(true);
+        btn.disabled = false;
+        btn.textContent = '🔄 Rebuild Graph';
+        document.getElementById('kgLoadingText').textContent = 'Extracting relationships from prescribing documents...';
+    }
+
+    function renderKnowledgeGraph(data) {
+        kgData = data;
+
+        const visNodes = data.nodes.map(n => {
+            const style = KG_NODE_STYLES[n.type] || KG_NODE_STYLES.condition;
+            return {
+                id: n.id,
+                label: `${style.icon} ${n.label}`,
+                color: { background: style.color.background, border: style.color.border, highlight: style.color, hover: style.color },
+                size: style.size,
+                font: { color: '#f1f5f9', size: 13 },
+                borderWidth: 2,
+                opacity: 1,
+                _meta: n,
+            };
+        });
+
+        const visEdges = data.edges.map((e, i) => {
+            const style = KG_EDGE_STYLES[e.type] || { color: '#94a3b8', width: 1, dashes: false };
+            return {
+                id: 'e' + i,
+                from: e.from,
+                to: e.to,
+                color: { color: style.color, opacity: 1 },
+                width: style.width,
+                dashes: style.dashes,
+                arrows: { to: { enabled: true, scaleFactor: 0.55 }, from: { enabled: !!e.bidirectional, scaleFactor: 0.55 } },
+                smooth: { type: 'curvedCW', roundness: 0.15 },
+                title: e.label,
+                _meta: e,
+            };
+        });
+
+        kgNodesDataSet = new vis.DataSet(visNodes);
+        kgEdgesDataSet = new vis.DataSet(visEdges);
+
+        const options = {
+            physics: {
+                enabled: true,
+                stabilization: { iterations: 150 },
+                barnesHut: { gravitationalConstant: -4000, springLength: 140, springConstant: 0.04 },
+            },
+            interaction: { hover: true, zoomView: true, dragView: true, tooltipDelay: 150 },
+            nodes: { shape: 'dot' },
+            edges: { smooth: true },
+            layout: { improvedLayout: true },
+        };
+
+        if (kgNetwork) kgNetwork.destroy();
+        kgNetwork = new vis.Network(document.getElementById('kgNetwork'), { nodes: kgNodesDataSet, edges: kgEdgesDataSet }, options);
+        kgNetwork.on('click', kgHandleNetworkClick);
+        kgNetwork.on('doubleClick', kgHandleDoubleClick);
+    }
+
+    function kgHandleNetworkClick(params) {
+        kgHideEdgeTooltip();
+        if (params.nodes.length > 0) {
+            kgSelectNode(params.nodes[0]);
+        } else if (params.edges.length > 0) {
+            kgShowEdgeTooltip(params.edges[0], params.pointer.DOM.x, params.pointer.DOM.y);
+        } else {
+            kgClearSelection();
+        }
+    }
+
+    function kgHandleDoubleClick(params) {
+        if (params.nodes.length === 0 && params.edges.length === 0) kgResetView();
+    }
+
+    function kgSelectNode(nodeId) {
+        kgSelectedNodeId = nodeId;
+        kgHighlightConnections(nodeId);
+        kgShowNodeInfo(kgNodesDataSet.get(nodeId)._meta);
+        kgNetwork.focus(nodeId, { scale: 1.1, animation: { duration: 400 } });
+    }
+
+    function kgHighlightConnections(nodeId) {
+        const connectedNodes = new Set(kgNetwork.getConnectedNodes(nodeId));
+        connectedNodes.add(nodeId);
+        const connectedEdges = new Set(kgNetwork.getConnectedEdges(nodeId));
+
+        kgNodesDataSet.forEach(n => {
+            kgNodesDataSet.update({ id: n.id, opacity: connectedNodes.has(n.id) ? 1 : 0.12 });
+        });
+        kgEdgesDataSet.forEach(e => {
+            const dim = !connectedEdges.has(e.id);
+            kgEdgesDataSet.update({ id: e.id, color: Object.assign({}, e.color, { opacity: dim ? 0.08 : 1 }) });
+        });
+    }
+
+    function kgClearHighlightVisuals() {
+        if (!kgNodesDataSet) return;
+        kgNodesDataSet.forEach(n => kgNodesDataSet.update({ id: n.id, opacity: 1 }));
+        kgEdgesDataSet.forEach(e => kgEdgesDataSet.update({ id: e.id, color: Object.assign({}, e.color, { opacity: 1 }) }));
+    }
+
+    function kgClearSelection() {
+        kgSelectedNodeId = null;
+        kgClearHighlightVisuals();
+        document.getElementById('kgInfoPanel').style.display = 'none';
+        kgHideEdgeTooltip();
+    }
+
+    function kgResetView() {
+        kgClearSelection();
+        if (kgNetwork) kgNetwork.fit({ animation: { duration: 400 } });
+    }
+
+    function kgShowNodeInfo(node) {
+        const content = document.getElementById('kgInfoContent');
+        if (node.type === 'drug') {
+            content.innerHTML = kgRenderDrugInfo(node, (kgData.drug_details || {})[node.full_name] || {});
+        } else if (node.type === 'condition') {
+            const drugs = kgNetwork.getConnectedNodes(node.id).map(id => kgNodesDataSet.get(id)._meta).filter(n => n.type === 'drug');
+            content.innerHTML = kgRenderRelatedInfo(node, '🏥', 'Condition', 'Drugs That Treat This', drugs);
+        } else {
+            const drugs = kgNetwork.getConnectedNodes(node.id).map(id => kgNodesDataSet.get(id)._meta).filter(n => n.type === 'drug');
+            const icon = node.type === 'class' ? '⚗️' : '⚠️';
+            const label = node.type === 'class' ? 'Drug Class' : 'Warning';
+            const relLabel = node.type === 'class' ? 'Drugs In This Class' : 'Drugs With This Warning';
+            content.innerHTML = kgRenderRelatedInfo(node, icon, label, relLabel, drugs);
+        }
+        document.getElementById('kgInfoPanel').style.display = 'block';
+    }
+
+    function kgRenderDrugInfo(node, details) {
+        const conditions = details.conditions_treated || [];
+        const conditionTags = conditions.length
+            ? conditions.map(c => `<span class="kg-info-tag condition">${escapeHtml(c)}</span>`).join('')
+            : '<span class="kg-info-empty">None extracted</span>';
+        const clsTag = details.drug_class
+            ? `<span class="kg-info-tag">${escapeHtml(details.drug_class)}</span>`
+            : '<span class="kg-info-empty">Not found in documents</span>';
+        const interactions = details.interactions || [];
+        const interactionTags = interactions.length
+            ? interactions.map(i => `<span class="kg-info-tag ${i.type === 'contraindicated_with' ? 'contraindicated' : 'interacts'}">${i.type === 'contraindicated_with' ? '⚠️ ' : ''}${escapeHtml(i.drug)}</span>`).join('')
+            : '<span class="kg-info-empty">None found</span>';
+        const warnings = details.black_box_warnings || [];
+        const warningTags = warnings.length
+            ? warnings.map(w => `<span class="kg-info-tag warning">${escapeHtml(w)}</span>`).join('')
+            : '<span class="kg-info-empty">None extracted</span>';
+
+        return `
+            <div class="kg-info-title">💊 ${escapeHtml(node.label)}</div>
+            <div class="kg-info-subtitle">Drug</div>
+            <div class="kg-info-section"><div class="kg-info-label">Drug Class</div><div class="kg-info-tag-row">${clsTag}</div></div>
+            <div class="kg-info-section"><div class="kg-info-label">Conditions Treated</div><div class="kg-info-tag-row">${conditionTags}</div></div>
+            <div class="kg-info-section"><div class="kg-info-label">Interactions</div><div class="kg-info-tag-row">${interactionTags}</div></div>
+            <div class="kg-info-section"><div class="kg-info-label">Warning</div><div class="kg-info-tag-row">${warningTags}</div></div>
+        `;
+    }
+
+    function kgRenderRelatedInfo(node, icon, typeLabel, relLabel, drugs) {
+        const tags = drugs.length
+            ? drugs.map(d => `<span class="kg-info-tag">💊 ${escapeHtml(d.label)}</span>`).join('')
+            : '<span class="kg-info-empty">None</span>';
+        return `
+            <div class="kg-info-title">${icon} ${escapeHtml(node.label)}</div>
+            <div class="kg-info-subtitle">${typeLabel}</div>
+            <div class="kg-info-section"><div class="kg-info-label">${relLabel}</div><div class="kg-info-tag-row">${tags}</div></div>
+        `;
+    }
+
+    function kgShowEdgeTooltip(edgeId, domX, domY) {
+        const edge = kgEdgesDataSet.get(edgeId);
+        const meta = edge._meta;
+        const fromNode = kgNodesDataSet.get(meta.from)._meta;
+        const toNode = kgNodesDataSet.get(meta.to)._meta;
+        const evidence = meta.evidence;
+
+        let html = `<button class="kg-edge-tooltip-close" onclick="kgHideEdgeTooltip()">✕</button>`;
+        html += `<div class="kg-edge-tooltip-title">${escapeHtml(fromNode.label)} — ${escapeHtml(meta.label)} — ${escapeHtml(toNode.label)}</div>`;
+        if (evidence && evidence.text) {
+            html += `<div>"${escapeHtml(evidence.text)}"</div>`;
+            html += `<div class="kg-edge-tooltip-source">📄 ${escapeHtml(evidence.source_file || '')} — Page ${evidence.page}</div>`;
+        } else {
+            html += `<div class="kg-info-empty">No source text captured for this relationship.</div>`;
+        }
+
+        const tooltip = document.getElementById('kgEdgeTooltip');
+        tooltip.innerHTML = html;
+        tooltip.style.display = 'block';
+        const bodyRect = document.getElementById('kgBody').getBoundingClientRect();
+        const maxLeft = Math.max(0, bodyRect.width - 340);
+        const maxTop = Math.max(0, bodyRect.height - 160);
+        tooltip.style.left = Math.min(domX + 10, maxLeft) + 'px';
+        tooltip.style.top = Math.min(domY + 10, maxTop) + 'px';
+    }
+
+    function kgHideEdgeTooltip() {
+        const tooltip = document.getElementById('kgEdgeTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+
+    function kgHandleSearch(value) {
+        clearTimeout(kgSearchDebounce);
+        kgSearchDebounce = setTimeout(() => {
+            if (!kgNodesDataSet || !value.trim()) return;
+            const q = value.trim().toLowerCase();
+            const match = kgNodesDataSet.get().find(n => n._meta.label.toLowerCase().includes(q));
+            if (match) kgSelectNode(match.id);
+        }, 200);
+    }
+
+    document.getElementById('kgModal').addEventListener('click', e => { if (e.target.id === 'kgModal') closeKnowledgeGraph(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('kgModal').classList.contains('active')) closeKnowledgeGraph(); });
+</script>
+</body>
+</html>

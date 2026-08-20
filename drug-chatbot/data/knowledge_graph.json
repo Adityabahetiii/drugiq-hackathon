@@ -1,0 +1,478 @@
+{
+  "nodes": [
+    {
+      "id": "drug:Keytruda (pembrolizumab)",
+      "label": "Keytruda",
+      "type": "drug",
+      "full_name": "Keytruda (pembrolizumab)",
+      "source_file": "keytruda.pdf"
+    },
+    {
+      "id": "drug:Methotrexate",
+      "label": "Methotrexate",
+      "type": "drug",
+      "full_name": "Methotrexate",
+      "source_file": "methotrexate.pdf"
+    },
+    {
+      "id": "drug:Ozempic (semaglutide)",
+      "label": "Ozempic",
+      "type": "drug",
+      "full_name": "Ozempic (semaglutide)",
+      "source_file": "ozempic.pdf"
+    },
+    {
+      "id": "drug:Rinvoq (upadacitinib)",
+      "label": "Rinvoq",
+      "type": "drug",
+      "full_name": "Rinvoq (upadacitinib)",
+      "source_file": "rinvoq.pdf"
+    },
+    {
+      "id": "condition:unresectable or metastatic melanoma",
+      "label": "Unresectable or metastatic melanoma",
+      "type": "condition"
+    },
+    {
+      "id": "class:pd-1 inhibitor",
+      "label": "PD-1 Inhibitor",
+      "type": "class"
+    },
+    {
+      "id": "warning:pneumonitis (keytruda)",
+      "label": "Pneumonitis (Keytruda)",
+      "type": "warning"
+    },
+    {
+      "id": "warning:colitis (keytruda)",
+      "label": "Colitis (Keytruda)",
+      "type": "warning"
+    },
+    {
+      "id": "warning:hepatitis (keytruda)",
+      "label": "Hepatitis (Keytruda)",
+      "type": "warning"
+    },
+    {
+      "id": "condition:rheumatoid arthritis",
+      "label": "Rheumatoid Arthritis",
+      "type": "condition"
+    },
+    {
+      "id": "condition:psoriasis",
+      "label": "Psoriasis",
+      "type": "condition"
+    },
+    {
+      "id": "condition:mellitus",
+      "label": "Mellitus",
+      "type": "condition"
+    },
+    {
+      "id": "condition:cardiovascular disease",
+      "label": "Cardiovascular Disease",
+      "type": "condition"
+    },
+    {
+      "id": "class:glp-1 receptor agonist",
+      "label": "GLP-1 Receptor Agonist",
+      "type": "class"
+    },
+    {
+      "id": "warning:serious hypersensitivity reactions (ozempic)",
+      "label": "Serious hypersensitivity reactions (Ozempic)",
+      "type": "warning"
+    },
+    {
+      "id": "condition:psoriatic arthritis",
+      "label": "Psoriatic Arthritis",
+      "type": "condition"
+    },
+    {
+      "id": "condition:ankylosing spondylitis",
+      "label": "Ankylosing Spondylitis",
+      "type": "condition"
+    },
+    {
+      "id": "condition:adult giant cell arteritis",
+      "label": "Adult giant cell arteritis",
+      "type": "condition"
+    },
+    {
+      "id": "class:jak inhibitor",
+      "label": "JAK Inhibitor",
+      "type": "class"
+    },
+    {
+      "id": "warning:malignancy",
+      "label": "Malignancy",
+      "type": "warning"
+    },
+    {
+      "id": "warning:major adverse cardiovascular events",
+      "label": "Major Adverse Cardiovascular Events",
+      "type": "warning"
+    },
+    {
+      "id": "warning:thrombosis",
+      "label": "Thrombosis",
+      "type": "warning"
+    },
+    {
+      "id": "warning:serious infections",
+      "label": "Serious Infections",
+      "type": "warning"
+    },
+    {
+      "id": "warning:mortality",
+      "label": "Mortality",
+      "type": "warning"
+    },
+    {
+      "id": "warning:hypersensitivity reactions (rinvoq)",
+      "label": "hypersensitivity reactions (Rinvoq)",
+      "type": "warning"
+    },
+    {
+      "id": "warning:gastrointestinal perforations (rinvoq)",
+      "label": "gastrointestinal perforations (Rinvoq)",
+      "type": "warning"
+    }
+  ],
+  "edges": [
+    {
+      "from": "drug:Keytruda (pembrolizumab)",
+      "to": "condition:unresectable or metastatic melanoma",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "Dosage and Administration (2) 07/2026 Warnings and Precautions (5) 05/2026 ----------------------------INDICATIONS AND USAGE ---------------------------- KEYTRUDA is a programmed death receptor-1 (PD-1)-blocking antibody indicated: Melanoma \u2022 for the treatment of patients with",
+        "page": 1,
+        "source_file": "keytruda.pdf"
+      }
+    },
+    {
+      "from": "drug:Keytruda (pembrolizumab)",
+      "to": "class:pd-1 inhibitor",
+      "label": "belongs to",
+      "type": "belongs_to",
+      "evidence": {
+        "text": "anti-tumor immune response. In syngeneic mouse tumor models, blocking PD-1 activity resulted in decreased tumor growth. In syngeneic mouse tumor models, combination treatment of a PD-1 blocking antibody and kinase inhibitor lenvatinib decreased tumor-associated macrophages,",
+        "page": 87,
+        "source_file": "keytruda.pdf"
+      }
+    },
+    {
+      "from": "drug:Keytruda (pembrolizumab)",
+      "to": "warning:pneumonitis (keytruda)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "\u2022 Pneumonitis: Advise patients to contact their healthcare provider immediately for new or worsening cough, chest pain, or shortness of breath [see Warnings and Precautions (5.1)]. \u2022 Colitis: Advise patients to contact their healthcare provider immediately for diarrhea or severe",
+        "page": 195,
+        "source_file": "keytruda.pdf"
+      }
+    },
+    {
+      "from": "drug:Keytruda (pembrolizumab)",
+      "to": "warning:colitis (keytruda)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "\u2022 Pneumonitis: Advise patients to contact their healthcare provider immediately for new or worsening cough, chest pain, or shortness of breath [see Warnings and Precautions (5.1)]. \u2022 Colitis: Advise patients to contact their healthcare provider immediately for diarrhea or severe",
+        "page": 195,
+        "source_file": "keytruda.pdf"
+      }
+    },
+    {
+      "from": "drug:Keytruda (pembrolizumab)",
+      "to": "warning:hepatitis (keytruda)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "\u2022 Pneumonitis: Advise patients to contact their healthcare provider immediately for new or worsening cough, chest pain, or shortness of breath [see Warnings and Precautions (5.1)]. \u2022 Colitis: Advise patients to contact their healthcare provider immediately for diarrhea or severe",
+        "page": 195,
+        "source_file": "keytruda.pdf"
+      }
+    },
+    {
+      "from": "drug:Methotrexate",
+      "to": "condition:rheumatoid arthritis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "This label may not be the latest approved by FDA. For current labeling information, please visit https://www.fda.gov/drugsatfda established, as by biopsy and/or after dermatologic consultation. It is important to ensure that a psoriasis \u201cflare\u201d is not due to an undiagnosed",
+        "page": 32,
+        "source_file": "methotrexate.pdf"
+      }
+    },
+    {
+      "from": "drug:Methotrexate",
+      "to": "condition:psoriasis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "This label may not be the latest approved by FDA. For current labeling information, please visit https://www.fda.gov/drugsatfda established, as by biopsy and/or after dermatologic consultation. It is important to ensure that a psoriasis \u201cflare\u201d is not due to an undiagnosed",
+        "page": 32,
+        "source_file": "methotrexate.pdf"
+      }
+    },
+    {
+      "from": "drug:Ozempic (semaglutide)",
+      "to": "condition:mellitus",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "Mellitus and Cardiovascular Disease SUSTAIN 6 (NCT01720446) was a multi-center, multi-national, placebo-controlled, double- blind cardiovascular outcomes trial. In this trial, 3,297 patients with inadequately controlled type 2 diabetes and atherosclerotic cardiovascular disease",
+        "page": 8,
+        "source_file": "ozempic.pdf"
+      }
+    },
+    {
+      "from": "drug:Ozempic (semaglutide)",
+      "to": "condition:cardiovascular disease",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "Mellitus and Cardiovascular Disease SUSTAIN 6 (NCT01720446) was a multi-center, multi-national, placebo-controlled, double- blind cardiovascular outcomes trial. In this trial, 3,297 patients with inadequately controlled type 2 diabetes and atherosclerotic cardiovascular disease",
+        "page": 8,
+        "source_file": "ozempic.pdf"
+      }
+    },
+    {
+      "from": "drug:Ozempic (semaglutide)",
+      "to": "class:glp-1 receptor agonist",
+      "label": "belongs to",
+      "type": "belongs_to",
+      "evidence": {
+        "text": "disodium phosphate dihydrate, 1.42 mg; sodium chloride, 8.25 mg; and water for injection. OZEMPIC\u00ae has a pH of approximately 7.4. Hydrochloric acid or sodium hydroxide may be added to adjust pH. 12 CLINICAL PHARMACOLOGY 12.1 Mechanism of Action Semaglutide is a GLP-1 analogue",
+        "page": 4,
+        "source_file": "ozempic.pdf"
+      }
+    },
+    {
+      "from": "drug:Ozempic (semaglutide)",
+      "to": "warning:serious hypersensitivity reactions (ozempic)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "severe gastroparesis. (5.7) Warnings and Precautions, Severe Gastrointestinal Adverse Reactions (5.7) .........................................................10/2025 \u2022 Hypersensitivity Reactions: Serious hypersensitivity reactions (e.g., anaphylaxis and angioedema) have been",
+        "page": 1,
+        "source_file": "ozempic.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "condition:rheumatoid arthritis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "Trial RA-I (NCT02706873) was a 24-week monotherapy trial in 947 patients with moderately to severely active rheumatoid arthritis who were na\u00efve to methotrexate (MTX). Patients received RINVOQ 15 mg or upadacitinib 30 mg orally once daily or MTX as monotherapy. At Week 26,",
+        "page": 43,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "condition:psoriatic arthritis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "adalimumab, or placebo, alone or in combination with background non-biologic DMARDs. At Week 24, all patients randomized to placebo were switched to RINVOQ 15 mg or upadacitinib 30 mg once daily in a blinded manner. The primary endpoint was the proportion of patients who",
+        "page": 49,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "condition:ankylosing spondylitis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "adalimumab, or placebo, alone or in combination with background non-biologic DMARDs. At Week 24, all patients randomized to placebo were switched to RINVOQ 15 mg or upadacitinib 30 mg once daily in a blinded manner. The primary endpoint was the proportion of patients who",
+        "page": 49,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "condition:adult giant cell arteritis",
+      "label": "treats",
+      "type": "treats",
+      "evidence": {
+        "text": "blockers. (1.8) Limitations of Use RINVOQ/RINVOQ LQ is not recommended for use in combination with other JAK inhibitors, biologic DMARDs, or with potent immunosuppressants such as azathioprine and cyclosporine. (1.8) \u2022 RINVOQ is indicated for the treatment of adults with giant",
+        "page": 1,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "class:jak inhibitor",
+      "label": "belongs to",
+      "type": "belongs_to",
+      "evidence": {
+        "text": "MORTALITY In a large, randomized, postmarketing safety study in rheumatoid arthritis (RA) patients 50 years of age and older with at least one cardiovascular risk factor comparing another Janus kinase (JAK) inhibitor to tumor necrosis factor (TNF) blockers, a higher rate of",
+        "page": 4,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:malignancy",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "MALIGNANCY, MAJOR ADVERSE CARDIOVASCULAR EVENTS (MACE), and THROMBOSIS See full prescribing information for complete boxed warning. \u2022 Increased risk of serious bacterial, fungal, viral, and opportunistic infections leading to hospitalization or death, including tuberculosis",
+        "page": 1,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:major adverse cardiovascular events",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "MALIGNANCY, MAJOR ADVERSE CARDIOVASCULAR EVENTS (MACE), and THROMBOSIS See full prescribing information for complete boxed warning. \u2022 Increased risk of serious bacterial, fungal, viral, and opportunistic infections leading to hospitalization or death, including tuberculosis",
+        "page": 1,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:thrombosis",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "thrombosis with another JAK inhibitor vs. TNF blockers. (5.5) RECENT MAJOR CHANGES Indications and Usage (1.4, 1.5) 10/2025 Warnings and Precautions (5.8) 6/2026 INDICATIONS AND USAGE RINVOQ/RINVOQ LQ is a Janus kinase (JAK) inhibitor. \u2022 RINVOQ is indicated for the treatment of",
+        "page": 1,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:serious infections",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "dermatitis were 65 years of age or older, including 6 patients 75 years of age. No differences in effectiveness were observed between these patients and younger patients; however, there was a higher rate of serious infections and malignancies in those patients 65 years of age or",
+        "page": 35,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:mortality",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "MORTALITY In a large, randomized, postmarketing safety study in rheumatoid arthritis (RA) patients 50 years of age and older with at least one cardiovascular risk factor comparing another Janus kinase (JAK) inhibitor to tumor necrosis factor (TNF) blockers, a higher rate of",
+        "page": 4,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:hypersensitivity reactions (rinvoq)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "\u2022 Serious Infections [see Warnings and Precautions (5.1)] \u2022 Mortality [see Warnings and Precautions (5.2)] \u2022 Malignancy and Lymphoproliferative Disorders [see Warnings and Precautions (5.3)] \u2022 Major Adverse Cardiovascular Events [see Warnings and Precautions (5.4)] \u2022 Thrombosis",
+        "page": 17,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Rinvoq (upadacitinib)",
+      "to": "warning:gastrointestinal perforations (rinvoq)",
+      "label": "shares warning",
+      "type": "shares_warning",
+      "evidence": {
+        "text": "\u2022 Serious Infections [see Warnings and Precautions (5.1)] \u2022 Mortality [see Warnings and Precautions (5.2)] \u2022 Malignancy and Lymphoproliferative Disorders [see Warnings and Precautions (5.3)] \u2022 Major Adverse Cardiovascular Events [see Warnings and Precautions (5.4)] \u2022 Thrombosis",
+        "page": 17,
+        "source_file": "rinvoq.pdf"
+      }
+    },
+    {
+      "from": "drug:Methotrexate",
+      "to": "drug:Rinvoq (upadacitinib)",
+      "label": "interacts with",
+      "type": "interacts_with",
+      "bidirectional": true,
+      "evidence": {
+        "text": "Trial RA-I (NCT02706873) was a 24-week monotherapy trial in 947 patients with moderately to severely active rheumatoid arthritis who were na\u00efve to methotrexate (MTX). Patients received RINVOQ 15 mg or upadacitinib 30 mg orally once daily or MTX as monotherapy. At Week 26,",
+        "page": 43,
+        "source_file": "rinvoq.pdf"
+      }
+    }
+  ],
+  "drug_details": {
+    "Keytruda (pembrolizumab)": {
+      "label": "Keytruda",
+      "conditions_treated": [
+        "Unresectable or metastatic melanoma"
+      ],
+      "drug_class": "PD-1 Inhibitor",
+      "black_box_warnings": [
+        "Pneumonitis",
+        "Colitis",
+        "Hepatitis"
+      ],
+      "interactions": []
+    },
+    "Methotrexate": {
+      "label": "Methotrexate",
+      "conditions_treated": [
+        "Psoriasis",
+        "Rheumatoid Arthritis"
+      ],
+      "drug_class": null,
+      "black_box_warnings": [],
+      "interactions": [
+        {
+          "drug": "Rinvoq",
+          "type": "interacts_with"
+        }
+      ]
+    },
+    "Ozempic (semaglutide)": {
+      "label": "Ozempic",
+      "conditions_treated": [
+        "Cardiovascular Disease",
+        "Mellitus"
+      ],
+      "drug_class": "GLP-1 Receptor Agonist",
+      "black_box_warnings": [
+        "Serious hypersensitivity reactions (e.g., anaphylaxis and angioedema)"
+      ],
+      "interactions": []
+    },
+    "Rinvoq (upadacitinib)": {
+      "label": "Rinvoq",
+      "conditions_treated": [
+        "Adult giant cell arteritis",
+        "Ankylosing Spondylitis",
+        "Psoriatic Arthritis",
+        "Rheumatoid Arthritis"
+      ],
+      "drug_class": "JAK Inhibitor",
+      "black_box_warnings": [
+        "malignancy",
+        "major adverse cardiovascular events (MACE)",
+        "thrombosis",
+        "serious infections",
+        "mortality",
+        "hypersensitivity reactions",
+        "gastrointestinal perforations"
+      ],
+      "interactions": [
+        {
+          "drug": "Methotrexate",
+          "type": "interacts_with"
+        }
+      ]
+    }
+  },
+  "drug_count": 4,
+  "generated_at": "2026-08-20T14:51:05.727615+00:00"
+}
