@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.5",
     "@vitejs/plugin-react": "latest",
     "react": "latest",
     "react-dom": "latest",
