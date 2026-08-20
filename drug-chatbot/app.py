@@ -68,6 +68,7 @@ warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from backend.vector_store import (
@@ -99,6 +100,7 @@ FRONTEND_DIST = os.path.normpath(os.path.join(
 ))
 
 app = Flask(__name__, static_folder=os.path.join(FRONTEND_DIST, "assets"), static_url_path="/assets")
+CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload
 
 # ---------------------------------------------------------------------------
@@ -457,5 +459,5 @@ if __name__ == '__main__':
     print(f"   API Key    : {'✅ Set' if GROQ_API_KEY else '❌ Not set'}")
     print("=" * 42)
 
-    print()
-    app.run(debug=True, port=5002, host='0.0.0.0')
+    port = int(os.environ.get('PORT', 5002))
+    app.run(debug=True, port=port, host='0.0.0.0')

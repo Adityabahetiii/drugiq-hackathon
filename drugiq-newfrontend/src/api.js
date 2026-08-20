@@ -1,7 +1,8 @@
 // Centralized client for the Flask backend (see ../../drug-chatbot/app.py).
-// Every request is same-origin in production (Flask serves this app's
-// build directly); in `npm run dev` the Vite proxy in vite.config.js
-// forwards /api/* to http://localhost:5002.
+// Can connect to a separate backend URL (e.g. Vercel frontend -> Render backend)
+// via VITE_API_URL, or defaults to same-origin / Vite proxy.
+
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 async function asJson(res) {
   let data
@@ -21,17 +22,17 @@ export function newSessionId(prefix = 'sid') {
 }
 
 export async function getStatus() {
-  const res = await fetch('/api/status')
+  const res = await fetch(`${API_BASE}/api/status`)
   return asJson(res)
 }
 
 export async function getDrugs(role = 'doctor') {
-  const res = await fetch(`/api/drugs?role=${encodeURIComponent(role || 'doctor')}`)
+  const res = await fetch(`${API_BASE}/api/drugs?role=${encodeURIComponent(role || 'doctor')}`)
   return asJson(res)
 }
 
 export async function chat({ question, sessionId, chatHistory, apiKey, role = 'patient' }) {
-  const res = await fetch('/api/chat', {
+  const res = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -49,12 +50,12 @@ export async function uploadPdf(file, role = 'doctor') {
   const fd = new FormData()
   fd.append('file', file)
   fd.append('role', role)
-  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+  const res = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: fd })
   return asJson(res)
 }
 
 export async function rebuildDatabase(role = 'doctor') {
-  const res = await fetch('/api/build', {
+  const res = await fetch(`${API_BASE}/api/build`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ role }),
@@ -63,13 +64,13 @@ export async function rebuildDatabase(role = 'doctor') {
 }
 
 export async function removeDrug(filename, role = 'doctor') {
-  const res = await fetch(`/api/drugs/${encodeURIComponent(filename)}?role=${encodeURIComponent(role)}`, { method: 'DELETE' })
+  const res = await fetch(`${API_BASE}/api/drugs/${encodeURIComponent(filename)}?role=${encodeURIComponent(role)}`, { method: 'DELETE' })
   return asJson(res)
 }
 
 export async function clearSession(sessionId) {
   try {
-    await fetch('/api/clear', {
+    await fetch(`${API_BASE}/api/clear`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId }),
@@ -80,7 +81,7 @@ export async function clearSession(sessionId) {
 }
 
 export async function setApiKey(apiKey) {
-  const res = await fetch('/api/set_key', {
+  const res = await fetch(`${API_BASE}/api/set_key`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ api_key: apiKey }),
@@ -90,8 +91,8 @@ export async function setApiKey(apiKey) {
 
 export async function getKnowledgeGraph(forceRebuild = false, role = 'doctor') {
   const url = forceRebuild
-    ? `/api/knowledge-graph/rebuild?role=${encodeURIComponent(role)}`
-    : `/api/knowledge-graph?role=${encodeURIComponent(role)}`
+    ? `${API_BASE}/api/knowledge-graph/rebuild?role=${encodeURIComponent(role)}`
+    : `${API_BASE}/api/knowledge-graph?role=${encodeURIComponent(role)}`
   const res = await fetch(url, {
     method: forceRebuild ? 'POST' : 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -101,5 +102,5 @@ export async function getKnowledgeGraph(forceRebuild = false, role = 'doctor') {
 }
 
 export function pdfUrl(filename) {
-  return `/api/download/${encodeURIComponent(filename)}`
+  return `${API_BASE}/api/download/${encodeURIComponent(filename)}`
 }
